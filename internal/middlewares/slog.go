@@ -6,12 +6,12 @@ import (
 
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/config"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/utils"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/utils/seq"
+	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/utils/tasks"
 	"golang.org/x/exp/slog"
 )
 
-func JSONlogger() seq.HandlerFunc {
-	return func(c *seq.Context) {
+func JSONlogger() tasks.HandlerFunc {
+	return func(c *tasks.Context) {
 		start := time.Now()
 
 		c.Next()

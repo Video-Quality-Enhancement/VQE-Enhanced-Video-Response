@@ -1,14 +1,14 @@
 package handlers
 
 import (
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/utils/seq"
+	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/utils"
+	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/utils/tasks"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/video/services"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/video/utils"
 	"golang.org/x/exp/slog"
 )
 
-func EnhancedVideoHandler(service services.EnhancedVideoService) seq.HandlerFunc {
-	return func(c *seq.Context) {
+func EnhancedVideoHandler(service services.EnhancedVideoService) tasks.HandlerFunc {
+	return func(c *tasks.Context) {
 
 		response := utils.GetEnhancedVideoResponse(c)
 		err := service.OnVideoEnhancementComplete(response)
