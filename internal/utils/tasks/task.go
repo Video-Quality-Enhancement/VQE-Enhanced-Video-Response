@@ -1,26 +1,26 @@
-package seq
+package tasks
 
 type HandlerFunc func(ctx *Context)
 
-type Sequencer interface {
-	Sequence(handlers ...HandlerFunc)
+type Task interface {
+	Perform(handlers ...HandlerFunc)
 }
 
-type sequencer struct {
+type task struct {
 	ctx *Context
 }
 
-func NewSequencer() Sequencer {
-	return &sequencer{
+func NewTask() Task {
+	return &task{
 		ctx: &Context{
 			index: -1,
 		},
 	}
 }
 
-func (seq *sequencer) Sequence(handlers ...HandlerFunc) {
-	seq.ctx.handlers = handlers
-	seq.ctx.Next()
+func (t *task) Perform(handlers ...HandlerFunc) {
+	t.ctx.handlers = handlers
+	t.ctx.Next()
 }
 
 type Context struct {
@@ -52,6 +52,12 @@ func (c *Context) Success() {
 func (c *Context) Error(err error) {
 	c.status = 500
 	c.err = err
+}
+
+func (c *Context) AbortWithError(err error) {
+	c.status = 500
+	c.err = err
+	c.index = int8(len(c.handlers))
 }
 
 func (c *Context) ErrorMessage() string {
