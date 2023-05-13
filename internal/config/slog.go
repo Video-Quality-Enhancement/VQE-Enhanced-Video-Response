@@ -11,7 +11,7 @@ import (
 func SetupSlogOutputFile() *os.File {
 
 	date := time.Now().Format(time.DateOnly)
-	fileName := "./logs/video_service_" + date + "_log.json"
+	fileName := "./logs/video_response_producer_" + date + "_log.json"
 	logFile, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		panic(err)
@@ -23,25 +23,4 @@ func SetupSlogOutputFile() *os.File {
 
 	return logFile
 
-}
-
-// WriteFunc convert func to io.Writer.
-type WriteFunc func([]byte) (int, error)
-
-func (fn WriteFunc) Write(data []byte) (int, error) {
-	return fn(data)
-}
-
-func NewSlogInfoWriter() io.Writer {
-	return WriteFunc(func(data []byte) (int, error) {
-		slog.Info(string(data))
-		return 0, nil
-	})
-}
-
-func NewSlogErrorWriter() io.Writer {
-	return WriteFunc(func(data []byte) (int, error) {
-		slog.Error(string(data))
-		return 0, nil
-	})
 }
