@@ -5,17 +5,15 @@ import (
 
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/utils/tasks"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/video/models"
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-// instead of set requestId, make it set properties and then set requestId, userId and others
-func SetEnhancedVideoProperties(d amqp.Delivery) tasks.HandlerFunc {
+func SetEnhancedVideoProperties() tasks.HandlerFunc {
 	return func(c *tasks.Context) {
 
 		var response models.EnhancedVideoResponse
-		err := json.Unmarshal(d.Body, &response)
+		err := json.Unmarshal(c.Delivery.Body, &response)
 		if err != nil {
-			c.AbortWithError(err)
+			c.Failure(err)
 			return
 		}
 		c.Set("x-enhanced-video-response", response)

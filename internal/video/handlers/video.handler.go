@@ -13,8 +13,8 @@ func EnhancedVideoHandler(service services.EnhancedVideoService) tasks.HandlerFu
 		response := utils.GetEnhancedVideoResponse(c)
 		err := service.OnVideoEnhancementComplete(response)
 		if err != nil {
-			slog.Error("Error handling enhanced video", "requestId", response.RequestId)
-			c.Error(err)
+			slog.Error("Error handling enhanced video", "requestId", response.RequestId, "err", err)
+			c.Failure(err)
 			return
 		}
 

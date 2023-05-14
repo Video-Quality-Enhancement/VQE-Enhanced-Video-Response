@@ -55,7 +55,7 @@ func (consumer *enhancedVideoConsumer) Consumer() error {
 	msgs, err := ch.Consume(
 		q.Name, // queue
 		"",     // consumer
-		true,   // auto-ack
+		false,  // auto-ack
 		false,  // exclusive
 		false,  // no-local
 		false,  // no-wait
@@ -69,35 +69,39 @@ func (consumer *enhancedVideoConsumer) Consumer() error {
 	var doneCh = make(chan struct{})
 
 	go func(msgs <-chan amqp.Delivery, doneCh <-chan struct{}, service services.EnhancedVideoService) {
+
+		task := tasks.NewTask()
+		task.Activities(
+			middlewares.JSONlogger(),
+			middlewares.SetEnhancedVideoProperties(),
+			handlers.EnhancedVideoHandler(service),
+		)
+
 		for {
 			select {
-			case d := <-msgs:
+			case msg := <-msgs:
 
-				tasks.NewTask().Perform(
-					middlewares.JSONlogger(),
-					middlewares.SetEnhancedVideoProperties(d),
-					handlers.EnhancedVideoHandler(service),
-				)
-
-				slog.Debug("Message Consumed", "body", d.Body)
+				task.Perform(msg)
+				slog.Debug("Message Consumed, msg is either acked or nacked")
 
 			case <-doneCh:
-				slog.Debug("Exiting the consumer goroutine")
+				slog.Info("Exiting the consumer goroutine")
 				return
 			}
 		}
+
 	}(msgs, doneCh, consumer.service)
 
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
-	slog.Debug("Waiting for messages. To exit press CTRL+C")
+	slog.Info("Waiting for messages. To exit press CTRL+C")
 
 	<-sigCh
 
 	doneCh <- struct{}{}
 
-	slog.Debug("Exiting the consumer")
+	slog.Info("Exiting the consumer")
 
 	return nil
 

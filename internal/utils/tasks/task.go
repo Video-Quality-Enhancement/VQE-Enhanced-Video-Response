@@ -1,9 +1,15 @@
 package tasks
 
+import (
+	amqp "github.com/rabbitmq/amqp091-go"
+	"golang.org/x/exp/slog"
+)
+
 type HandlerFunc func(ctx *Context)
 
 type Task interface {
-	Perform(handlers ...HandlerFunc)
+	Activities(handlers ...HandlerFunc)
+	Perform(delivery amqp.Delivery)
 }
 
 type task struct {
@@ -13,13 +19,21 @@ type task struct {
 func NewTask() Task {
 	return &task{
 		ctx: &Context{
-			index: -1,
+			index:  -1,
+			status: 0,
+			err:    nil,
+			keys:   make(map[string]any),
 		},
 	}
 }
 
-func (t *task) Perform(handlers ...HandlerFunc) {
+func (t *task) Activities(handlers ...HandlerFunc) {
 	t.ctx.handlers = handlers
+}
+
+func (t *task) Perform(delivery amqp.Delivery) {
+	t.ctx.Delivery = delivery
+	t.ctx.reset()
 	t.ctx.Next()
 }
 
@@ -28,7 +42,15 @@ type Context struct {
 	status   int
 	err      error
 	keys     map[string]any
+	Delivery amqp.Delivery
 	handlers []HandlerFunc
+}
+
+func (c *Context) reset() {
+	c.index = -1
+	c.status = 0
+	c.err = nil
+	c.keys = make(map[string]any)
 }
 
 func (c *Context) Next() {
@@ -47,17 +69,22 @@ func (c *Context) Status() int {
 
 func (c *Context) Success() {
 	c.status = 200
+	err := c.Delivery.Ack(false)
+	if err != nil {
+		slog.Error("Failed to ack message", "err", err)
+	}
 }
 
-func (c *Context) Error(err error) {
-	c.status = 500
-	c.err = err
-}
+func (c *Context) Failure(err error) {
 
-func (c *Context) AbortWithError(err error) {
 	c.status = 500
 	c.err = err
 	c.index = int8(len(c.handlers))
+	err = c.Delivery.Nack(false, true)
+	if err != nil {
+		slog.Error("Failed to nack message", "err", err)
+	}
+
 }
 
 func (c *Context) ErrorMessage() string {
