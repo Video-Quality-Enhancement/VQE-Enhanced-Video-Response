@@ -6,8 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/config"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/video/models"
+	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/models"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"golang.org/x/exp/slog"
 )
@@ -17,26 +16,20 @@ type NotificationProducer interface {
 }
 
 type notificationProducer struct {
-	conn config.AMQPconnection
+	ch *amqp.Channel
 }
 
-func NewNotificationProducer() NotificationProducer {
+func NewNotificationProducer(ch *amqp.Channel) NotificationProducer {
 	return &notificationProducer{
-		conn: config.NewAMQPconnection(),
+		ch: ch,
 	}
 }
 
 func (producer *notificationProducer) PublishNotification(request *models.EnhancedVideoNotifyRequest) error {
 
-	ch, err := producer.conn.NewChannel()
-	if err != nil {
-		slog.Error("Failed to open a channel", "err", err)
-		return err
-	}
-	defer ch.Close()
-
-	err = ch.ExchangeDeclare(
-		"notification",
+	exchange := "enhanced.video.notification"
+	err := producer.ch.ExchangeDeclare(
+		exchange,
 		"topic",
 		true,
 		false,
@@ -58,11 +51,15 @@ func (producer *notificationProducer) PublishNotification(request *models.Enhanc
 		return err
 	}
 
-	// ? Should I pass the correlation id also
-	key := "notify." + strings.Join(request.ResponseInterfaces, ".")
-	err = ch.PublishWithContext(
+	key := strings.Join(request.ResponseInterfaces, ".")
+	if key == "" {
+		slog.Debug("No response interfaces found, not publishing notification", "requestId", request.RequestId)
+		return nil
+	}
+
+	err = producer.ch.PublishWithContext(
 		ctx,
-		"notification",
+		exchange,
 		key,
 		false,
 		false,

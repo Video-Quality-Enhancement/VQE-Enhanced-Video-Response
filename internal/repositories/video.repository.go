@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/video/models"
+	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/exp/slog"
@@ -20,7 +20,7 @@ type EnhancedVideoResponseRepository interface {
 }
 
 type EnhancedVideoNotifyRequestRepository interface {
-	FindByRequestId(requestId string) (*models.EnhancedVideoNotifyRequest, error)
+	FindByRequestId(userId, requestId string) (*models.EnhancedVideoNotifyRequest, error)
 }
 
 type enhancedVideoRepository struct {
@@ -31,13 +31,15 @@ func NewEnhancedVideoRepository(collection *mongo.Collection) EnhancedVideoRepos
 	return &enhancedVideoRepository{collection}
 }
 
-func (repository *enhancedVideoRepository) FindByRequestId(requestId string) (*models.EnhancedVideoNotifyRequest, error) {
+func (repository *enhancedVideoRepository) FindByRequestId(userId, requestId string) (*models.EnhancedVideoNotifyRequest, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	filter := bson.M{"userId": userId, "requestId": requestId}
+
 	var request models.EnhancedVideoNotifyRequest
-	err := repository.collection.FindOne(ctx, models.EnhancedVideoNotifyRequest{RequestId: requestId}).Decode(&request)
+	err := repository.collection.FindOne(ctx, filter).Decode(&request)
 	if err != nil {
 		slog.Error("Error finding enhanced video", "requestId", requestId)
 		return nil, err
@@ -53,18 +55,22 @@ func (repository *enhancedVideoRepository) Update(response *models.EnhancedVideo
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := repository.collection.UpdateOne(
-		ctx,
-		models.EnhancedVideoResponse{RequestId: response.RequestId},
-		bson.D{{Key: "$set", Value: models.EnhancedVideoResponse{EnhancedVideoUri: response.EnhancedVideoUri}}},
-	)
+	filter := bson.M{"userId": response.UserId, "requestId": response.RequestId}
+	update := bson.D{
+		{Key: "$set", Value: bson.M{
+			"enhancedVideoUrl": response.EnhancedVideoUrl,
+			"status":           response.Status,
+			"statusMessage":    response.StatusMessage,
+		}}}
+
+	updatedResult, err := repository.collection.UpdateOne(ctx, filter, update)
 
 	if err != nil {
 		slog.Error("Error updating video", "requestId", response.RequestId)
 		return err
 	}
 
-	slog.Debug("Updated video", "requestId", response.RequestId)
+	slog.Debug("Updated video", "requestId", response.RequestId, "updatedCount", updatedResult.ModifiedCount)
 	return nil
 
 }

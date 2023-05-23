@@ -5,43 +5,35 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/config"
+	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/handlers"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/middlewares"
+	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/services"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/utils/tasks"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/video/handlers"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/video/services"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"golang.org/x/exp/slog"
 )
 
 type EnhancedVideoConsumer interface {
-	Consumer() error
+	Consume() error
 }
 
 type enhancedVideoConsumer struct {
-	conn    config.AMQPconnection
+	ch      *amqp.Channel
 	service services.EnhancedVideoService
 }
 
-func NewEnhancedVideoConsumer(conn config.AMQPconnection, service services.EnhancedVideoService) EnhancedVideoConsumer {
+func NewEnhancedVideoConsumer(ch *amqp.Channel, service services.EnhancedVideoService) EnhancedVideoConsumer {
 	return &enhancedVideoConsumer{
-		conn:    conn,
+		ch:      ch,
 		service: service,
 	}
 }
 
-func (consumer *enhancedVideoConsumer) Consumer() error {
+func (consumer *enhancedVideoConsumer) Consume() error {
 
-	ch, err := consumer.conn.NewChannel()
-	if err != nil {
-		slog.Error("Failed to open a channel", "err", err)
-		return err
-	}
-	defer ch.Close()
-
-	q, err := ch.QueueDeclare(
+	q, err := consumer.ch.QueueDeclare(
 		"enhanced.video", // name
-		false,            // durable
+		true,             // durable
 		false,            // delete when unused
 		false,            // exclusive
 		false,            // no-wait
@@ -52,7 +44,7 @@ func (consumer *enhancedVideoConsumer) Consumer() error {
 		return err
 	}
 
-	msgs, err := ch.Consume(
+	msgs, err := consumer.ch.Consume(
 		q.Name, // queue
 		"",     // consumer
 		false,  // auto-ack

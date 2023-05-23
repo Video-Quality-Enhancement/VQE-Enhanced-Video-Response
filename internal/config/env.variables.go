@@ -21,7 +21,7 @@ func GetEnv(key, defaultValue string) string {
 // Useful in development and test modes. Not used in production.
 func LoadEnvVariables() {
 
-	env := GetEnv("GIN_ENV", "development")
+	env := GetEnv("ENV", "development")
 
 	if env == "production" || env == "staging" {
 		slog.Info("Not using .env file in production or staging.")

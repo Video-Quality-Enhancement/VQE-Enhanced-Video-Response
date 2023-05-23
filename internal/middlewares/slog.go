@@ -2,9 +2,9 @@ package middlewares
 
 import (
 	"context"
+	"os"
 	"time"
 
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/config"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/utils"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/utils/tasks"
 	"golang.org/x/exp/slog"
@@ -19,14 +19,17 @@ func JSONlogger() tasks.HandlerFunc {
 		end := time.Now()
 		latency := end.Sub(start)
 
+		userId, _ := utils.GetUserId(c)
+		requestId, _ := utils.GetRequestID(c)
+
 		// make changes with the attributes for taking the producer and consumer in consern
 		attributes := []slog.Attr{
-			slog.String("gin-env", config.GetEnv("GIN_ENV", "development")),
-			slog.String("service-name", config.GetEnv("SERVICE_NAME", "vqe-response-producer")),
-			slog.String("user-id", utils.GetUserId(c)),
+			slog.String("env", os.Getenv("ENV")),
+			slog.String("service-name", os.Getenv("SERVICE_NAME")),
+			slog.String("user-id", userId),
 			slog.Int("status", c.Status()),
 			slog.Duration("latency", latency),
-			slog.String("request-id", utils.GetRequestID(c)),
+			slog.String("request-id", requestId),
 		}
 
 		switch {

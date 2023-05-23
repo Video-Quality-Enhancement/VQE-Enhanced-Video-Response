@@ -3,14 +3,14 @@ package models
 type EnhancedVideoResponse struct {
 	UserId           string `json:"userId" bson:"userId"`
 	RequestId        string `json:"requestId" bson:"requestId"`
-	EnhancedVideoUri string `json:"EnhancedVideoUri" bson:"EnhancedVideoUri"`
+	EnhancedVideoUrl string `json:"enhancedVideoUrl" bson:"enhancedVideoUrl"`
+	Status           string `json:"status" bson:"status"`
+	StatusMessage    string `json:"statusMessage" bson:"statusMessage"`
 }
 
 type EnhancedVideoNotifyRequest struct {
 	UserId             string   `json:"userId" bson:"userId"`
 	RequestId          string   `json:"requestId" bson:"requestId"`
 	ResponseInterfaces []string `json:"responseInterfaces" bson:"responseInterfaces"`
-	EnhancedVideoUri   string   `json:"EnhancedVideoUri" bson:"EnhancedVideoUri"`
+	EnhancedVideoUrl   string   `json:"enhancedVideoUrl" bson:"enhancedVideoUrl"`
 }
-
-// TODO: change uri back to url and apply binding

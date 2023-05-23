@@ -1,9 +1,10 @@
 package services
 
 import (
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/video/models"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/video/producers"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/video/repositories"
+	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/models"
+	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/producers"
+	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/repositories"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"golang.org/x/exp/slog"
 )
 
@@ -16,18 +17,18 @@ type videoEnhanceService struct {
 	notificationProducer producers.NotificationProducer
 }
 
-func NewEnhancedVideoService(repository repositories.EnhancedVideoRepository) EnhancedVideoService {
+func NewEnhancedVideoService(repository repositories.EnhancedVideoRepository, ch *amqp.Channel) EnhancedVideoService {
 
 	return &videoEnhanceService{
 		repository:           repository,
-		notificationProducer: producers.NewNotificationProducer(),
+		notificationProducer: producers.NewNotificationProducer(ch),
 	}
 
 }
 
-func (service *videoEnhanceService) getNotifyRequest(requestId string) (*models.EnhancedVideoNotifyRequest, error) {
+func (service *videoEnhanceService) getNotifyRequest(userId, requestId string) (*models.EnhancedVideoNotifyRequest, error) {
 
-	notifyRequest, err := service.repository.FindByRequestId(requestId)
+	notifyRequest, err := service.repository.FindByRequestId(userId, requestId)
 	if err != nil {
 		slog.Error("Error getting notify request", "requestId", requestId)
 		return nil, err
@@ -46,7 +47,7 @@ func (service *videoEnhanceService) OnVideoEnhancementComplete(response *models.
 		return err
 	}
 
-	notifyRequest, err := service.getNotifyRequest(response.RequestId)
+	notifyRequest, err := service.getNotifyRequest(response.UserId, response.RequestId)
 	if err != nil {
 		slog.Error("Error getting notify request", "requestId", response.RequestId)
 		return err

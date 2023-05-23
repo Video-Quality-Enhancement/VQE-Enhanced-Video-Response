@@ -1,10 +1,8 @@
 package main
 
 import (
-	"os"
-
+	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/app"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/config"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/video"
 )
 
 func init() {
@@ -21,9 +19,8 @@ func main() {
 	defer client.Disconnect()
 
 	conn := config.NewAMQPconnection()
-	defer conn.Disconnect()
+	defer conn.DisconnectAll()
 
-	consumer := video.SetUpConsumer(db.Collection(os.Getenv("VIDEO_COLLECTION")), conn)
-	consumer.Consumer()
+	app.SetUpApp(db, conn)
 
 }
