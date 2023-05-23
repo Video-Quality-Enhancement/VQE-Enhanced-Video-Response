@@ -72,6 +72,8 @@ func (c *Context) Success() {
 	err := c.Delivery.Ack(false)
 	if err != nil {
 		slog.Error("Failed to ack message", "err", err)
+	} else {
+		slog.Debug("Acked message", "requestId", c.Get("X-Request-ID").(string), "userId", c.Get("X-User-ID").(string))
 	}
 }
 
@@ -83,6 +85,8 @@ func (c *Context) Failure(err error) {
 	err = c.Delivery.Nack(false, true)
 	if err != nil {
 		slog.Error("Failed to nack message", "err", err)
+	} else {
+		slog.Error("Nacked message", "requestId", c.Get("X-Request-ID").(string), "userId", c.Get("X-User-ID").(string))
 	}
 
 }
