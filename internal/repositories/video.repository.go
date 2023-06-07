@@ -58,9 +58,10 @@ func (repository *enhancedVideoRepository) Update(response *models.EnhancedVideo
 	filter := bson.M{"userId": response.UserId, "requestId": response.RequestId}
 	update := bson.D{
 		{Key: "$set", Value: bson.M{
-			"enhancedVideoUrl": response.EnhancedVideoUrl,
-			"status":           response.Status,
-			"statusMessage":    response.StatusMessage,
+			"enhancedVideoUrl":     response.EnhancedVideoUrl,
+			"enhancedVideoQuality": response.EnhancedVideoQuality,
+			"status":               response.Status,
+			"statusMessage":        response.StatusMessage,
 		}}}
 
 	updatedResult, err := repository.collection.UpdateOne(ctx, filter, update)
