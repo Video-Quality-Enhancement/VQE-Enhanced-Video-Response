@@ -64,6 +64,7 @@ func (repository *enhancedVideoRepository) Update(response *models.EnhancedVideo
 			"enhancedVideoQuality": response.EnhancedVideoQuality,
 			"status":               response.Status,
 			"statusMessage":        response.StatusMessage,
+			"updatedAt":            response.UpdatedAt,
 		}}}
 
 	updatedResult, err := repository.collection.UpdateOne(ctx, filter, update)
