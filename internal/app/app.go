@@ -9,7 +9,7 @@ import (
 
 func SetUpApp(database *mongo.Database, conn config.AMQPconnection, firebaseClient config.FirebaseClient) {
 
-	videoCollection := database.Collection(os.Getenv("VIDEO_COLLECTION"))
+	videoCollection := database.Collection(os.Getenv("VIDEO_ENHANCE_COLLECTION"))
 	userCollection := database.Collection(os.Getenv("USER_COLLECTION"))
 	consumer := SetUpEnhancedVideoConsumer(videoCollection, userCollection, firebaseClient, conn)
 	consumer.Consume()
