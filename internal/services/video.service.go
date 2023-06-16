@@ -4,6 +4,7 @@ import (
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/models"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/producers"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/repositories"
+	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/services/gapi"
 	"golang.org/x/exp/slog"
 )
 
@@ -11,34 +12,31 @@ type EnhancedVideoService interface {
 	OnVideoEnhancementComplete(response *models.EnhancedVideoResponse) error
 }
 
-type videoEnhanceService struct {
+type enhancedVideoService struct {
 	repository           repositories.EnhancedVideoRepository
+	userService          UserService
+	storageService       gapi.GoogleCloudStorage
 	notificationProducer producers.NotificationProducer
 }
 
-func NewEnhancedVideoService(repository repositories.EnhancedVideoRepository, producer producers.NotificationProducer) EnhancedVideoService {
+func NewEnhancedVideoService(
+	repository repositories.EnhancedVideoRepository,
+	userService UserService,
+	producer producers.NotificationProducer,
+) EnhancedVideoService {
 
-	return &videoEnhanceService{
+	storageService := gapi.NewGoogleCloudStorage()
+
+	return &enhancedVideoService{
 		repository:           repository,
+		userService:          userService,
+		storageService:       storageService,
 		notificationProducer: producer,
 	}
 
 }
 
-func (service *videoEnhanceService) getNotifyRequest(userId, requestId string) (*models.EnhancedVideoNotifyRequest, error) {
-
-	notifyRequest, err := service.repository.FindByRequestId(userId, requestId)
-	if err != nil {
-		slog.Error("Error getting notify request", "requestId", requestId)
-		return nil, err
-	}
-
-	slog.Debug("Got notify request", "requestId", requestId)
-	return notifyRequest, nil
-
-}
-
-func (service *videoEnhanceService) OnVideoEnhancementComplete(response *models.EnhancedVideoResponse) error {
+func (service *enhancedVideoService) OnVideoEnhancementComplete(response *models.EnhancedVideoResponse) error {
 
 	err := service.repository.Update(response)
 	if err != nil {
@@ -46,13 +44,33 @@ func (service *videoEnhanceService) OnVideoEnhancementComplete(response *models.
 		return err
 	}
 
-	notifyRequest, err := service.getNotifyRequest(response.UserId, response.RequestId)
+	email, err := service.userService.GetEmail(response.UserId)
 	if err != nil {
-		slog.Error("Error getting notify request", "requestId", response.RequestId)
+		slog.Error("error getting email from user service", "requestId", response.RequestId, "useId", response.UserId)
 		return err
 	}
 
-	err = service.notificationProducer.PublishNotification(notifyRequest) // not running this in a serparate goroutine coz i will run the enhanced video consumer in a separate goroutine which calls this method and even record the time taken to update and publish using the slog middleware
+	filepath := response.RequestId + ".mp4"
+	err = service.storageService.GrantAccess(filepath, email)
+	if err != nil {
+		slog.Error("error granting access to email", "filepath", filepath, "requestId", response.RequestId, "useId", response.UserId)
+		return err
+	}
+
+	notificationInterfaces, err := service.userService.GetNotificationInterfaces(response.UserId)
+	if err != nil {
+		slog.Error("error getting notification interfaces from user service", "error", err, "requestId", response.RequestId, "useId", response.UserId)
+		return err
+	}
+
+	notifyRequest := &models.EnhancedVideoNotifyRequest{
+		RequestId:            response.RequestId,
+		UserId:               response.UserId,
+		EnhancedVideoUrl:     response.EnhancedVideoUrl,
+		EnhancedVideoQuality: response.EnhancedVideoQuality,
+		Status:               response.Status,
+	}
+	err = service.notificationProducer.PublishNotification(notifyRequest, notificationInterfaces) // not running this in a serparate goroutine coz i will run the enhanced video consumer in a separate goroutine which calls this method and even record the time taken to update and publish using the slog middleware
 	if err != nil {
 		slog.Error("Error publishing notification", "requestId", response.RequestId)
 		return err

@@ -5,6 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/config"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/handlers"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/middlewares"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/services"
@@ -18,33 +19,43 @@ type EnhancedVideoConsumer interface {
 }
 
 type enhancedVideoConsumer struct {
-	ch      *amqp.Channel
-	service services.EnhancedVideoService
+	conn      config.AMQPconnection
+	service   services.EnhancedVideoService
+	queueName string
 }
 
-func NewEnhancedVideoConsumer(ch *amqp.Channel, service services.EnhancedVideoService) EnhancedVideoConsumer {
+func NewEnhancedVideoConsumer(conn config.AMQPconnection, service services.EnhancedVideoService) EnhancedVideoConsumer {
+	queueName := "enhanced.video"
 	return &enhancedVideoConsumer{
-		ch:      ch,
-		service: service,
+		conn:      conn,
+		service:   service,
+		queueName: queueName,
 	}
 }
 
 func (consumer *enhancedVideoConsumer) Consume() error {
 
-	q, err := consumer.ch.QueueDeclare(
-		"enhanced.video", // name
-		true,             // durable
-		false,            // delete when unused
-		false,            // exclusive
-		false,            // no-wait
-		nil,              // arguments
+	ch, err := consumer.conn.NewChannel()
+	if err != nil {
+		slog.Error("Failed to open a channel", "error", err)
+		return err
+	}
+	defer ch.Close()
+
+	q, err := ch.QueueDeclare(
+		consumer.queueName, // name
+		true,               // durable
+		false,              // delete when unused
+		false,              // exclusive
+		false,              // no-wait
+		nil,                // arguments
 	)
 	if err != nil {
 		slog.Error("Failed to declare a queue", "err", err)
 		return err
 	}
 
-	msgs, err := consumer.ch.Consume(
+	msgs, err := ch.Consume(
 		q.Name, // queue
 		"",     // consumer
 		false,  // auto-ack

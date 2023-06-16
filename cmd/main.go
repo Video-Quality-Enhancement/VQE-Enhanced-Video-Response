@@ -21,6 +21,8 @@ func main() {
 	conn := config.NewAMQPconnection()
 	defer conn.DisconnectAll()
 
-	app.SetUpApp(db, conn)
+	firebaseClient := config.NewFirebaseClient()
+
+	app.SetUpApp(db, conn, firebaseClient)
 
 }

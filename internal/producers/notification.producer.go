@@ -6,31 +6,46 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/config"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/models"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"golang.org/x/exp/slog"
 )
 
 type NotificationProducer interface {
-	PublishNotification(request *models.EnhancedVideoNotifyRequest) error
+	PublishNotification(request *models.EnhancedVideoNotifyRequest, notificationInterfacses []string) error
 }
 
 type notificationProducer struct {
-	ch *amqp.Channel
+	conn         config.AMQPconnection
+	exchange     string
+	exchangeType string
 }
 
-func NewNotificationProducer(ch *amqp.Channel) NotificationProducer {
+func NewNotificationProducer(conn config.AMQPconnection) NotificationProducer {
+
+	exchange := "enhanced.video.notification"
+	exchangeType := "topic"
+
 	return &notificationProducer{
-		ch: ch,
+		conn:         conn,
+		exchange:     exchange,
+		exchangeType: exchangeType,
 	}
 }
 
-func (producer *notificationProducer) PublishNotification(request *models.EnhancedVideoNotifyRequest) error {
+func (producer *notificationProducer) PublishNotification(request *models.EnhancedVideoNotifyRequest, notificationInterfacses []string) error {
 
-	exchange := "enhanced.video.notification"
-	err := producer.ch.ExchangeDeclare(
-		exchange,
-		"topic",
+	ch, err := producer.conn.NewChannel()
+	if err != nil {
+		slog.Error("Failed to open a channel", "error", err)
+		return err
+	}
+	defer ch.Close()
+
+	err = ch.ExchangeDeclare(
+		producer.exchange,
+		producer.exchangeType,
 		true,
 		false,
 		false,
@@ -51,15 +66,15 @@ func (producer *notificationProducer) PublishNotification(request *models.Enhanc
 		return err
 	}
 
-	key := strings.Join(request.ResponseInterfaces, ".")
+	key := strings.Join(notificationInterfacses, ".")
 	if key == "" {
-		slog.Debug("No response interfaces found, not publishing notification", "requestId", request.RequestId)
+		slog.Debug("No notification interfaces found, not publishing notification", "requestId", request.RequestId, "userId", request.UserId)
 		return nil
 	}
 
-	err = producer.ch.PublishWithContext(
+	err = ch.PublishWithContext(
 		ctx,
-		exchange,
+		producer.exchange,
 		key,
 		false,
 		false,

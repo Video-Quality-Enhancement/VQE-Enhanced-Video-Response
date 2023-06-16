@@ -11,16 +11,7 @@ import (
 )
 
 type EnhancedVideoRepository interface {
-	EnhancedVideoResponseRepository
-	EnhancedVideoNotifyRequestRepository
-}
-
-type EnhancedVideoResponseRepository interface {
 	Update(response *models.EnhancedVideoResponse) error
-}
-
-type EnhancedVideoNotifyRequestRepository interface {
-	FindByRequestId(userId, requestId string) (*models.EnhancedVideoNotifyRequest, error)
 }
 
 type enhancedVideoRepository struct {
@@ -52,8 +43,6 @@ func (repository *enhancedVideoRepository) FindByRequestId(userId, requestId str
 
 func (repository *enhancedVideoRepository) Update(response *models.EnhancedVideoResponse) error {
 
-	response.UpdatedAt = time.Now().UTC()
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -64,7 +53,7 @@ func (repository *enhancedVideoRepository) Update(response *models.EnhancedVideo
 			"enhancedVideoQuality": response.EnhancedVideoQuality,
 			"status":               response.Status,
 			"statusMessage":        response.StatusMessage,
-			"updatedAt":            response.UpdatedAt,
+			"updatedAt":            time.Now().UTC(),
 		}}}
 
 	updatedResult, err := repository.collection.UpdateOne(ctx, filter, update)

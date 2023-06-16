@@ -1,20 +1,24 @@
 package app
 
 import (
+	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/config"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/consumers"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/producers"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/repositories"
 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/services"
-	amqp "github.com/rabbitmq/amqp091-go"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func SetUpEnhancedVideoConsumer(collection *mongo.Collection, consumerCh, notifyProducerCh *amqp.Channel) consumers.EnhancedVideoConsumer {
+func SetUpEnhancedVideoConsumer(videoCollection, userCollection *mongo.Collection, firebaseClient config.FirebaseClient, conn config.AMQPconnection) consumers.EnhancedVideoConsumer {
 
-	respository := repositories.NewEnhancedVideoRepository(collection)
-	producer := producers.NewNotificationProducer(notifyProducerCh)
-	service := services.NewEnhancedVideoService(respository, producer)
-	consumer := consumers.NewEnhancedVideoConsumer(consumerCh, service)
+	videoRepository := repositories.NewEnhancedVideoRepository(videoCollection)
+	notifyProducer := producers.NewNotificationProducer(conn)
+
+	userRepository := repositories.NewUserRepository(userCollection)
+	userService := services.NewUserService(userRepository, firebaseClient)
+
+	videoService := services.NewEnhancedVideoService(videoRepository, userService, notifyProducer)
+	consumer := consumers.NewEnhancedVideoConsumer(conn, videoService)
 	return consumer
 
 }
