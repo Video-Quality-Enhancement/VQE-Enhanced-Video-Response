@@ -3,8 +3,8 @@ package utils
 import (
 	"errors"
 
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/models"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/utils/tasks"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/models"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/utils/tasks"
 	"golang.org/x/exp/slog"
 )
 

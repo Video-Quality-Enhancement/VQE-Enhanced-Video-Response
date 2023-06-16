@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/services"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/utils"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/utils/tasks"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/services"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/utils"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/utils/tasks"
 	"golang.org/x/exp/slog"
 )
 

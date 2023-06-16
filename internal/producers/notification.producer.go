@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/config"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/models"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/config"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/models"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"golang.org/x/exp/slog"
 )

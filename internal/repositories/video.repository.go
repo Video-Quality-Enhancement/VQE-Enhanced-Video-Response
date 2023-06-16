@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/models"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/exp/slog"

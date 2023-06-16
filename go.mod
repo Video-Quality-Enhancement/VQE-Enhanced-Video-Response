@@ -1,4 +1,4 @@
-module github.com/Video-Quality-Enhancement/VQE-Response-Producer
+module github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response
 
 go 1.20
 

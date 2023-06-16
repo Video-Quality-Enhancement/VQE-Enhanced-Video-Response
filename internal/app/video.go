@@ -1,11 +1,11 @@
 package app
 
 import (
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/config"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/consumers"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/producers"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/repositories"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/services"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/config"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/consumers"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/producers"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/repositories"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/services"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

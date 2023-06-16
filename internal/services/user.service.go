@@ -1,8 +1,8 @@
 package services
 
 import (
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/config"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/repositories"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/config"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/repositories"
 	"golang.org/x/exp/slog"
 )
 

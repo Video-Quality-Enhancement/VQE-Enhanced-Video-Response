@@ -5,11 +5,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/config"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/handlers"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/middlewares"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/services"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/utils/tasks"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/config"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/handlers"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/middlewares"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/services"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/utils/tasks"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"golang.org/x/exp/slog"
 )

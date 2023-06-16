@@ -4,9 +4,9 @@ package repositories_test
 // 	"os"
 // 	"testing"
 
-// 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/config"
-// 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/models"
-// 	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/repositories"
+// 	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/config"
+// 	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/models"
+// 	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/repositories"
 // )
 
 // func TestMain(m *testing.M) {

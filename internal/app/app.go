@@ -3,7 +3,7 @@ package app
 import (
 	"os"
 
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/config"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/config"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

@@ -1,10 +1,10 @@
 package services
 
 import (
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/models"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/producers"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/repositories"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/services/gapi"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/models"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/producers"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/repositories"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/services/gapi"
 	"golang.org/x/exp/slog"
 )
 

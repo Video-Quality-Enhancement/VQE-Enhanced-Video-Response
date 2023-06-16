@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/app"
-	"github.com/Video-Quality-Enhancement/VQE-Response-Producer/internal/config"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/app"
+	"github.com/Video-Quality-Enhancement/VQE-Enhanced-Video-Response/internal/config"
 )
 
 func init() {
