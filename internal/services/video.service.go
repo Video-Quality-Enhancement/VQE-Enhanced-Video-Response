@@ -44,23 +44,34 @@ func (service *enhancedVideoService) OnVideoEnhancementComplete(response *models
 		return err
 	}
 
-	email, err := service.userService.GetEmail(response.UserId)
-	if err != nil {
-		slog.Error("error getting email from user service", "requestId", response.RequestId, "useId", response.UserId)
-		return err
-	}
+	// email, err := service.userService.GetEmail(response.UserId)
+	// if err != nil {
+	// 	slog.Error("error getting email from user service", "requestId", response.RequestId, "useId", response.UserId)
+	// 	return err
+	// }
 
-	filepath := response.RequestId + ".mp4"
-	err = service.storageService.GrantAccess(filepath, email)
-	if err != nil {
-		slog.Error("error granting access to email", "filepath", filepath, "requestId", response.RequestId, "useId", response.UserId)
-		return err
-	}
+	// filepath := response.RequestId + ".mp4"
+	// err = service.storageService.GrantAccess(filepath, email)
+	// if err != nil {
+	// 	slog.Error("error granting access to email", "filepath", filepath, "requestId", response.RequestId, "useId", response.UserId)
+	// 	return err
+	// }
 
 	notificationInterfaces, err := service.userService.GetNotificationInterfaces(response.UserId)
 	if err != nil {
 		slog.Error("error getting notification interfaces from user service", "error", err, "requestId", response.RequestId, "useId", response.UserId)
 		return err
+	}
+
+	var FCMTokens []string = []string{}
+	for _, notificationInterface := range notificationInterfaces {
+		if notificationInterface == "ui" {
+			FCMTokens, err = service.userService.GetFCMTokens(response.UserId)
+			if err != nil {
+				slog.Error("error getting fcm tokens from user service", "requestId", response.RequestId, "useId", response.UserId)
+				return err
+			}
+		}
 	}
 
 	notifyRequest := &models.EnhancedVideoNotifyRequest{
@@ -69,6 +80,7 @@ func (service *enhancedVideoService) OnVideoEnhancementComplete(response *models
 		EnhancedVideoUrl:     response.EnhancedVideoUrl,
 		EnhancedVideoQuality: response.EnhancedVideoQuality,
 		Status:               response.Status,
+		FCMtokens:            FCMTokens,
 	}
 	err = service.notificationProducer.PublishNotification(notifyRequest, notificationInterfaces) // not running this in a serparate goroutine coz i will run the enhanced video consumer in a separate goroutine which calls this method and even record the time taken to update and publish using the slog middleware
 	if err != nil {

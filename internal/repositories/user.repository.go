@@ -13,6 +13,7 @@ import (
 
 type UserRepository interface {
 	FindNotificationInterfaces(userId string) ([]string, error)
+	FindFCMTokens(userId string) ([]string, error)
 }
 
 type userRepository struct {
@@ -41,5 +42,26 @@ func (r *userRepository) FindNotificationInterfaces(userId string) ([]string, er
 
 	slog.Debug("Found Notification Interfaces", "userId", userId, "notificationInterfaces", request.NotificationInterfaces)
 	return request.NotificationInterfaces, nil
+
+}
+
+func (r *userRepository) FindFCMTokens(userId string) ([]string, error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	filter := bson.M{"userId": userId}
+	opts := options.FindOne().SetProjection(bson.M{"fcmTokens": 1})
+
+	var request models.FCMtokensRequest
+	err := r.collection.FindOne(ctx, filter, opts).Decode(&request)
+
+	if err != nil {
+		slog.Error("Failed to find FCM Tokens", "error", err, "userId", userId)
+		return nil, err
+	}
+
+	slog.Debug("Found FCM Tokens", "userId", userId, "fcmTokens", request.FCMtokens)
+	return request.FCMtokens, nil
 
 }

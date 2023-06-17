@@ -9,6 +9,7 @@ import (
 type UserService interface {
 	GetNotificationInterfaces(userId string) ([]string, error)
 	GetEmail(userId string) (string, error)
+	GetFCMTokens(userId string) ([]string, error)
 }
 
 type userService struct {
@@ -43,4 +44,17 @@ func (service *userService) GetEmail(userId string) (string, error) {
 
 	slog.Debug("got email of user", "userId", userId)
 	return email, nil
+}
+
+func (service *userService) GetFCMTokens(userId string) ([]string, error) {
+
+	fcmTokens, err := service.repository.FindFCMTokens(userId)
+	if err != nil {
+		slog.Error("Error getting FCM tokens", "userId", userId)
+		return nil, err
+	}
+
+	slog.Debug("Got FCM tokens", "userId", userId, "fcmTokens", fcmTokens)
+	return fcmTokens, nil
+
 }
